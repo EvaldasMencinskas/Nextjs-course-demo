@@ -1,5 +1,2 @@
 
-# ignore mongo and node files #
-
-*next
 *node_modules
