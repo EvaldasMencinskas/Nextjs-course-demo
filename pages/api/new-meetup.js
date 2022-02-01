@@ -12,7 +12,7 @@ async function handler(req, res) {
     );
     const db = client.db();
 
-    const meetupsCollection = db.collection("meetups");
+    const meetupsCollection = db.collection("meetupsDatabase");
     const result = await meetupsCollection.insertOne(data);
 
     console.log(result);
