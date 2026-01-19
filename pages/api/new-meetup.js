@@ -26,7 +26,6 @@ async function handler(req, res) {
     }
   }
 
-  // 👇 THIS FIXES YOUR ERROR
   res.status(405).json({ message: "Method not allowed" });
 }
 

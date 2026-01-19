@@ -1,71 +1,86 @@
-import MeetupDetail from "../../components/meetups/MeetupDetail";
 import { MongoClient, ObjectId } from "mongodb";
-import { Fragment } from "react";
 import Head from "next/head";
 
-function MeetupDetails(props) {
+function MeetupDetail({ meetupData }) {
+  if (!meetupData) return <p>Meetup not found.</p>;
+
   return (
-    <Fragment>
+    <>
       <Head>
-        <title>{props.meetupData.title}</title>
-        <meta name="description" content={props.meetupData.description}></meta>
+        <title>{meetupData.title}</title>
+        <meta name="description" content={meetupData.description} />
       </Head>
-      <MeetupDetail
-        image={props.meetupData.image}
-        title={props.meetupData.title}
-        address={props.meetupData.address}
-        description={props.meetupData.description}
-      />
-    </Fragment>
+      <section>
+        <img src={meetupData.image} alt={meetupData.title} />
+        <h1>{meetupData.title}</h1>
+        <address>{meetupData.address}</address>
+        <p>{meetupData.description}</p>
+      </section>
+    </>
   );
 }
 
 export async function getStaticPaths() {
   const client = await MongoClient.connect(
-    "mongodb+srv://EvaldasTest:0ZLhsfkwot0CuqVZ@cluster0.wo9dz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+    "mongodb+srv://EvaldasTest:0ZLhsfkwot0CuqVZ@cluster0.wo9dz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
   );
   const db = client.db();
-
   const meetupsCollection = db.collection("meetups");
 
-  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
-
+  const meetups = await meetupsCollection
+    .find({}, { projection: { _id: 1 } })
+    .toArray();
   client.close();
 
   return {
+    fallback: "blocking",
     paths: meetups.map((meetup) => ({
       params: { meetupId: meetup._id.toString() },
     })),
-    fallback: "blocking",
   };
 }
 
 export async function getStaticProps(context) {
   const meetupId = context.params.meetupId;
+
+  if (!meetupId || meetupId.length !== 24) {
+    return { notFound: true };
+  }
+
   const client = await MongoClient.connect(
-    "mongodb+srv://EvaldasTest:0ZLhsfkwot0CuqVZ@cluster0.wo9dz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+    "mongodb+srv://EvaldasTest:0ZLhsfkwot0CuqVZ@cluster0.wo9dz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
   );
   const db = client.db();
-
   const meetupsCollection = db.collection("meetups");
 
-  const selectedMeetup = await meetupsCollection.findOne({
-    _id: ObjectId(meetupId),
-  });
+  let selectedMeetup = null;
+
+  try {
+    selectedMeetup = await meetupsCollection.findOne({
+      _id: new ObjectId(meetupId),
+    });
+  } catch (err) {
+    client.close();
+    return { notFound: true };
+  }
 
   client.close();
+
+  if (!selectedMeetup) {
+    return { notFound: true };
+  }
 
   return {
     props: {
       meetupData: {
         id: selectedMeetup._id.toString(),
         title: selectedMeetup.title,
-        address: selectedMeetup.address,
         image: selectedMeetup.image,
+        address: selectedMeetup.address,
         description: selectedMeetup.description,
       },
     },
   };
 }
 
-export default MeetupDetails;
+export default MeetupDetail;
