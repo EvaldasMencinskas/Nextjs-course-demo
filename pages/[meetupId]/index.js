@@ -11,7 +11,17 @@ function MeetupDetail({ meetupData }) {
         <meta name="description" content={meetupData.description} />
       </Head>
       <section>
-        <img src={meetupData.image} alt={meetupData.title} />
+        <img
+          src={meetupData.image}
+          alt={meetupData.title}
+          style={{
+            width: "100%",
+            maxHeight: "400px",
+            objectFit: "cover",
+            borderRadius: "6px",
+            marginBottom: "1rem",
+          }}
+        />
         <h1>{meetupData.title}</h1>
         <address>{meetupData.address}</address>
         <p>{meetupData.description}</p>
