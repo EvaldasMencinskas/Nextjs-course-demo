@@ -16,6 +16,11 @@ function NewMeetupPage() {
       },
     });
 
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text);
+    }
+
     const data = await response.json();
 
     console.log(data);
